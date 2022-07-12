@@ -56,7 +56,7 @@ func (m OptionsWithHandler) sms(ctx *fasthttp.RequestCtx) {
 		} else {
 			params := &openapi.CreateMessageParams{}
 			// TODO change from hard-coded reciver to reciver retrieved from WebHook
-			params.SetTo("+4797177236")
+			params.SetTo("+zzxxxxxxxx")
 			params.SetFrom(m.Options.Sender)
 			// TODO change from hard-coded message to message retrieved from JSON WebHook
 			params.SetBody("Hello from Go!")
@@ -81,7 +81,7 @@ func (m OptionsWithHandler) call(ctx *fasthttp.RequestCtx) {
 		} else {
 			params := &openapi.CreateCallParams{}
 			// TODO change from hard-coded reciver to reciver retrieved from WebHook
-			params.SetTo("+4797177236")
+			params.SetTo("+zzxxxxxxxx")
 			params.SetFrom(m.Options.Sender)
 			// TODO change from hard-coded message to message retrieved from JSON WebHook
 			params.SetTwiml("<response><say>Hello there!</say></response>")
