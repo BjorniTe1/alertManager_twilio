@@ -16,10 +16,10 @@ type options struct {
 
 func main() {
 	opts := options{
-		AccountSid: os.Getenv("SID"),
-		AuthToken:  os.Getenv("TOKEN"),
-		Receiver:   os.Getenv("RECEIVER"),
-		Sender:     os.Getenv("SENDER"),
+		AccountSid: os.Getenv("AccountSid"),
+		AuthToken:  os.Getenv("AuthToken"),
+		Receiver:   os.Getenv("Receiver"),
+		Sender:     os.Getenv("Sender"),
 	}
 
 	if opts.AccountSid == "" || opts.AuthToken == "" || opts.Sender == "" {

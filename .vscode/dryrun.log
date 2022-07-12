@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/bjornkristian/Desktop/Telenor/TwilioGitHub'
+docker build -t BjorniTe1/alertManager_twilio:latest .
+make: Leaving directory `/Users/bjornkristian/Desktop/Telenor/TwilioGitHub'
+ 
