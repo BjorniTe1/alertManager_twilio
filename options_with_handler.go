@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/buger/jsonparser"
+	log "github.com/sirupsen/logrus"
 	"github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 	"github.com/valyala/fasthttp"
@@ -32,12 +34,12 @@ func (m OptionsWithHandler) HandleFastHTTP(ctx *fasthttp.RequestCtx) {
 	case "/":
 		m.ping(ctx)
 	case "/sms":
-		m.sms(ctx)
+		m.smsRequest(ctx)
 	case "/call":
-		m.call(ctx)
+		m.callRequest(ctx)
 	case "/callandsms":
-		m.call(ctx)
-		m.sms(ctx)
+		m.callRequest(ctx)
+		m.smsRequest(ctx)
 	default:
 		ctx.Error("Not found", fasthttp.StatusNotFound)
 	}
@@ -47,16 +49,25 @@ func (m OptionsWithHandler) ping(ctx *fasthttp.RequestCtx) {
 	fmt.Fprint(ctx, "ping")
 }
 
-func (m OptionsWithHandler) sms(ctx *fasthttp.RequestCtx) {
+func (m OptionsWithHandler) smsRequest(ctx *fasthttp.RequestCtx) {
 	if !ctx.IsPost() {
 		ctx.SetStatusCode(fasthttp.StatusMethodNotAllowed)
 	} else {
 		if string(ctx.Request.Header.Peek("Content-Type")) != "application/json" {
 			ctx.SetStatusCode(fasthttp.StatusNotAcceptable)
 		} else {
+			body := ctx.PostBody()
+			status, _ := jsonparser.GetString(body, "status")
+
+			receiver := m.findReciver(ctx)
+			if receiver == "" {
+				ctx.SetStatusCode(fasthttp.StatusBadRequest)
+				log.Error("Bad request: receiver not specified")
+				return
+			}
+
 			params := &openapi.CreateMessageParams{}
-			// TODO change from hard-coded reciver to reciver retrieved from WebHook
-			params.SetTo("+zzxxxxxxxx")
+			params.SetTo(receiver)
 			params.SetFrom(m.Options.Sender)
 			// TODO change from hard-coded message to message retrieved from JSON WebHook
 			params.SetBody("Hello from Go!")
@@ -72,16 +83,25 @@ func (m OptionsWithHandler) sms(ctx *fasthttp.RequestCtx) {
 	}
 }
 
-func (m OptionsWithHandler) call(ctx *fasthttp.RequestCtx) {
+func (m OptionsWithHandler) callRequest(ctx *fasthttp.RequestCtx) {
 	if !ctx.IsPost() {
 		ctx.SetStatusCode(fasthttp.StatusMethodNotAllowed)
 	} else {
 		if string(ctx.Request.Header.Peek("Content-Type")) != "application/json" {
 			ctx.SetStatusCode(fasthttp.StatusNotAcceptable)
 		} else {
+			body := ctx.PostBody()
+			status, _ := jsonparser.GetString(body, "status")
+
+			receiver := m.findReciver(ctx)
+			if receiver == "" {
+				ctx.SetStatusCode(fasthttp.StatusBadRequest)
+				log.Error("Bad request: receiver not specified")
+				return
+			}
+
 			params := &openapi.CreateCallParams{}
-			// TODO change from hard-coded reciver to reciver retrieved from WebHook
-			params.SetTo("+zzxxxxxxxx")
+			params.SetTo(receiver)
 			params.SetFrom(m.Options.Sender)
 			// TODO change from hard-coded message to message retrieved from JSON WebHook
 			params.SetTwiml("<response><say>Hello there!</say></response>")
@@ -97,4 +117,16 @@ func (m OptionsWithHandler) call(ctx *fasthttp.RequestCtx) {
 			}
 		}
 	}
+}
+
+func (m OptionsWithHandler) findReciver(ctx *fasthttp.RequestCtx) string {
+	sendOptions := new(options)
+	*sendOptions = *m.Options
+	const rcvKey = "receiver"
+	args := ctx.QueryArgs()
+	if nil != args && args.Has(rcvKey) {
+		rcv := string(args.Peek(rcvKey))
+		sendOptions.Receiver = rcv
+	}
+	return sendOptions.Receiver
 }

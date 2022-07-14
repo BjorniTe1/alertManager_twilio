@@ -3,10 +3,10 @@
 #-----------------------------------------------------------------------------
 
 # name of container
-CONTAINER_NAME = swatto/promtotwilio
+CONTAINER_NAME = bjornite1/alertmanager_twilio
 
 # name of instance and other options you want to pass to docker run for testing
-INSTANCE_NAME = promtotwilio
+INSTANCE_NAME = TwilioGitHub
 RUN_OPTS = -p 9090:9090 --env-file ./.env
 
 #-----------------------------------------------------------------------------
